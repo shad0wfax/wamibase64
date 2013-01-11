@@ -24,6 +24,9 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+/*
+* Modified - Akshay Sharma; Jan 11, 2013 - get recorded audio as base64 encoded
+*/
 package edu.mit.csail.wami.client 
 {
 	import edu.mit.csail.wami.play.IPlayer;
@@ -56,6 +59,9 @@ package edu.mit.csail.wami.client
 			External.addCallback("startPlaying",startPlaying);
 			External.addCallback("stopPlaying",stopPlaying);
 			External.addCallback("getPlayingLevel", getPlayingLevel);
+			
+			// Added for getting the recorded data as Base64 encoded
+			External.addCallback("stopRecordingAndGetAsBase64", stopRecordingAndGetAsBase64);
 		}
 		
 		internal function startPlaying(url:String, 
@@ -104,6 +110,12 @@ package edu.mit.csail.wami.client
 		{
 			return recorder.level();
 		}
+		
+		internal function stopRecordingAndGetAsBase64():String
+		{
+			return recorder.stopRecordingAndGetAsBase64();
+		}
+		
 	}
 }
 

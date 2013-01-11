@@ -1,0 +1,7 @@
+This is a modified WAMI recorder - Returns BASE64 Audio data instead of posting it to a server.
+-------------------------------
+The original WAMI recorder is a flash based recorder found at:
+https://code.google.com/p/wami-recorder/
+
+Akshay modified it to encode the Audio data as base64 instead of posting it to server. This allows javascript to retrieve the data and post it on its own.
+All copyright notices are used as is. This is just a quick hack to enable our project.

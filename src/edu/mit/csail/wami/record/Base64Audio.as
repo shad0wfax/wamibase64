@@ -24,32 +24,62 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-/*
- * Modified - Akshay Sharma; Jan 11, 2013 - get recorded audio as base64 encoded
- */
 package edu.mit.csail.wami.record
-{
+{	
+	import edu.mit.csail.wami.utils.External;
+	import edu.mit.csail.wami.utils.Pipe;
 	import edu.mit.csail.wami.utils.StateListener;
+	
+	import flash.utils.ByteArray;
+	
+	import mx.utils.Base64Encoder;
+	
+	/**
+	 * Write data and POST on close.
+	 */
+	public class Base64Audio extends Pipe
+	{	
+		private var listener:StateListener;
 
-	public interface IRecorder
-	{
-		// Start and stop recording.  Calling start while recording
-		// or calling stop when not recording should have no effect.
-		function start(url:String, listener:StateListener):void; 
-		function stop(force:Boolean = false):void;
+		private var finished:Boolean = false;
+		private var buffer:ByteArray = new ByteArray();
 		
-		// It can be helpful to buffer a certain amount of audio to 
-		// prepend (and append) to the audio collected between start
-		// and stop.  This means, Flash needs to constantly listen.
-		// There are other times when it's obvious no recording will
-		// be done, and so listening is unnecesary.
-		function listen(paddingMillis:uint):void;
-		function unlisten():void;
+		private var base64Data:String;
 		
-		// Audio level (between 0 and 100)
-		function level():int; 
+		public function Base64Audio(listener:StateListener)
+		{
+			this.listener = listener;
+		}
 		
-		// Get Audio data Base64 encoded 
-		function stopRecordingAndGetAsBase64(force:Boolean = false):String;
-	}
+		override public function write(bytes:ByteArray):void
+		{
+			bytes.readBytes(buffer, buffer.length, bytes.bytesAvailable);
+		}
+		
+		override public function close():void 
+		{
+			buffer.position = 0;
+			External.debug("Base64 Encoding length " + buffer.length);
+			buffer.position = 0;
+			
+			if (buffer.bytesAvailable == 0) {
+				External.debug("No data, so encoding to empty string.");
+				base64Data = "";
+			} else {	
+				var base64:Base64Encoder = new Base64Encoder();
+				base64.encodeBytes(buffer);
+				base64Data = base64.toString();
+				External.debug("Base64 encoded string = " + base64Data);
+			}
+			super.close();
+			listener.finished();
+			finished = true;
+		}
+		
+		public function getBase64Audio():String 
+		{
+			return base64Data;
+		}
+		
+	}		
 }

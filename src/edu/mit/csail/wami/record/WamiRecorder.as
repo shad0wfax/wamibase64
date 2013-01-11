@@ -43,6 +43,7 @@ package edu.mit.csail.wami.record
 	import flash.media.SoundCodec;
 	import flash.utils.Endian;
 	import flash.utils.clearInterval;
+	import flash.utils.getTimer;
 	import flash.utils.setInterval;
 	
 	public class WamiRecorder implements IRecorder
@@ -65,6 +66,7 @@ package edu.mit.csail.wami.record
 		private var startTime:Date;
 		private var stopTime:Date;
 		private var listener:StateListener;
+		private var post:Pipe;
 
 		public function WamiRecorder(mic:Microphone, params:WamiParams)
 		{	
@@ -147,8 +149,6 @@ package edu.mit.csail.wami.record
 		public function createAudioPipe(url:String, listener:StateListener):Pipe
 		{
 			this.listener = listener;
-			
-			var post:Pipe;
 			var container:IAudioContainer;
 			if (params.stream)
 			{
@@ -160,7 +160,8 @@ package edu.mit.csail.wami.record
 			}
 			else
 			{
-				post = new SinglePost(url, "audio/x-wav", 30*1000, listener);
+				// post = new SinglePost(url, "audio/x-wav", 30*1000, listener);
+				post = new Base64Audio(listener);
 				container = new WaveContainer();
 			}
 			
@@ -221,6 +222,32 @@ package edu.mit.csail.wami.record
 			return mic.activityLevel;
 		}
 		
+		public function stopRecordingAndGetAsBase64(force:Boolean = false):String 
+		{
+			clearInterval(stopInterval);
+			
+			// Lets block before calling really stop - to ensure remaining stuff gets in??
+			blockingSleep(paddingMillis);
+			
+			reallyStop();
+			var audioAsBase64:String = (post as Base64Audio).getBase64Audio();
+			return audioAsBase64
+			
+//			if (force) 
+//			{
+//				
+//			reallyStop();
+//			} 
+//			else 
+//			{
+//				stopInterval = setInterval(function():void {
+//					clearInterval(stopInterval);
+//					reallyStop();
+//				}, paddingMillis);
+//			}
+			
+		}
+		
 		private function reallyStop():void
 		{
 			if (!audioPipe) return;
@@ -263,6 +290,15 @@ package edu.mit.csail.wami.record
 		private function getPaddingBufferSize():uint
 		{
 			return uint(getBytesPerSecond()*params.paddingMillis/1000.0);
+		}
+		
+		private function blockingSleep(ms:int):void {
+			var init:int = flash.utils.getTimer();
+			while(true) {
+				if(flash.utils.getTimer() - init >= ms) {
+					break;
+				}
+			}
 		}
 		
 	}
