@@ -231,7 +231,7 @@ package edu.mit.csail.wami.record
 			
 			reallyStop();
 			var audioAsBase64:String = (post as Base64Audio).getBase64Audio();
-			return audioAsBase64
+			return "data:audio/wav;base64," + audioAsBase64
 			
 //			if (force) 
 //			{
